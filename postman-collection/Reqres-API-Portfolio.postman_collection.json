@@ -1,0 +1,390 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Reqres.in — API Portfolio",
+		"description": "QA portfolio collection for https://reqres.in — list, read, create, update, and delete user flows with automated status, timing, and JSON assertions.\n\n**Authentication:** Reqres requires header `x-api-key`. Create a free key at https://app.reqres.in/api-keys and set the collection variable `apiKey` (Current Value).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "key",
+				"value": "x-api-key",
+				"type": "string"
+			},
+			{
+				"key": "value",
+				"value": "{{apiKey}}",
+				"type": "string"
+			},
+			{
+				"key": "in",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					"const key = pm.collectionVariables.get('apiKey');",
+					"if (!key || String(key).trim() === '') {",
+					"    console.warn('[Reqres] Set collection variable `apiKey` (free: https://app.reqres.in/api-keys).');",
+					"}"
+				],
+				"type": "text/javascript"
+			}
+		}
+	],
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "GET List users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const MAX_MS = 3000;",
+									"",
+									"pm.test('[GET-LIST] Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('[GET-LIST] Response time is within budget', function () {",
+									"    pm.expect(pm.response.responseTime, 'responseTime ms').to.be.below(MAX_MS);",
+									"});",
+									"",
+									"pm.test('[GET-LIST] Response body is JSON', function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test('[GET-LIST] Response has pagination and data array', function () {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.keys('page', 'per_page', 'total', 'total_pages', 'data');",
+									"    pm.expect(body.data).to.be.an('array').that.is.not.empty;",
+									"});",
+									"",
+									"pm.test('[GET-LIST] User object has required fields', function () {",
+									"    const first = pm.response.json().data[0];",
+									"    pm.expect(first).to.include.keys('id', 'email', 'first_name', 'last_name', 'avatar');",
+									"    pm.expect(first.id).to.be.a('number');",
+									"    pm.expect(first.email).to.be.a('string').and.to.match(/@/);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Paginated list of users. Validates 200, JSON, pagination fields, and first user shape."
+					},
+					"response": []
+				},
+				{
+					"name": "GET Single user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const MAX_MS = 3000;",
+									"const EXPECTED_ID = 2;",
+									"",
+									"pm.test('[GET-ONE] Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('[GET-ONE] Response time is within budget', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(MAX_MS);",
+									"});",
+									"",
+									"pm.test('[GET-ONE] Response body is JSON', function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test('[GET-ONE] data object contains user fields', function () {",
+									"    const data = pm.response.json().data;",
+									"    pm.expect(data).to.include.keys('id', 'email', 'first_name', 'last_name', 'avatar');",
+									"    pm.expect(data.id).to.eql(EXPECTED_ID);",
+									"    pm.expect(data.avatar).to.be.a('string').and.to.include('http');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"2"
+							]
+						},
+						"description": "Single user by ID (demo user 2). Validates wrapper `data` and identity fields."
+					},
+					"response": []
+				},
+				{
+					"name": "POST Create user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const MAX_MS = 3000;",
+									"",
+									"pm.test('[POST] Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('[POST] Response time is within budget', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(MAX_MS);",
+									"});",
+									"",
+									"pm.test('[POST] Response body is JSON', function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test('[POST] Created resource fields', function () {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.include.keys('name', 'job', 'id', 'createdAt');",
+									"    pm.expect(body.name).to.eql('morpheus');",
+									"    pm.expect(body.job).to.eql('leader');",
+									"    pm.expect(body.createdAt).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"morpheus\",\n  \"job\": \"leader\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "Simulated create; Reqres returns synthetic id and createdAt."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Update user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const MAX_MS = 3000;",
+									"",
+									"pm.test('[PUT] Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('[PUT] Response time is within budget', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(MAX_MS);",
+									"});",
+									"",
+									"pm.test('[PUT] Response body is JSON', function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test('[PUT] Updated fields present', function () {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.include.keys('name', 'job', 'updatedAt');",
+									"    pm.expect(body.name).to.eql('morpheus');",
+									"    pm.expect(body.job).to.eql('zion resident');",
+									"    pm.expect(body.updatedAt).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"morpheus\",\n  \"job\": \"zion resident\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"2"
+							]
+						},
+						"description": "Full update for user 2 (demo)."
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH Partial update user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const MAX_MS = 3000;",
+									"",
+									"pm.test('[PATCH] Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('[PATCH] Response time is within budget', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(MAX_MS);",
+									"});",
+									"",
+									"pm.test('[PATCH] Response body is JSON', function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test('[PATCH] Partial update fields', function () {",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.include.keys('name', 'job', 'updatedAt');",
+									"    pm.expect(body.name).to.eql('morpheus');",
+									"    pm.expect(body.job).to.eql('messiah');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"morpheus\",\n  \"job\": \"messiah\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"2"
+							]
+						},
+						"description": "Partial update for user 2 (demo)."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const MAX_MS = 3000;",
+									"",
+									"pm.test('[DELETE] Status code is 204', function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"pm.test('[DELETE] Response time is within budget', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(MAX_MS);",
+									"});",
+									"",
+									"pm.test('[DELETE] Response body is empty (no JSON payload)', function () {",
+									"    const text = pm.response.text();",
+									"    pm.expect(text === '' || text === null || text === undefined).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"2"
+							]
+						},
+						"description": "Delete user 2; 204 with empty body per Reqres behavior."
+					},
+					"response": []
+				}
+			],
+			"description": "User resource scenarios against reqres.in/api."
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://reqres.in/api",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "",
+			"type": "secret"
+		}
+	]
+}

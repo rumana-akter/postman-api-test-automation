@@ -1,0 +1,4 @@
+# Optional local secrets (Postman env exports, Newman env files)
+.env
+.env.*
+*.postman_environment.json
