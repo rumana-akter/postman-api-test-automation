@@ -95,3 +95,19 @@ Official docs and behavior: [https://reqres.in](https://reqres.in)
 ## Author
 
 Prepared as a **QA / API testing portfolio** sample. Replace this section with your name, links, and contact if you publish the repo publicly.
+
+
+
+## Screenshots
+
+### Collection Execution Summary
+All API test cases executed successfully using Postman Collection Runner.
+
+![Collection Run](screenshots/collection-run.png)
+
+---
+
+### Sample Test Validation (GET Users)
+Example of API validation including status, response time, JSON structure, and schema checks.
+
+![Test Results](screenshots/test-results.png)
